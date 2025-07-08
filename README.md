@@ -43,7 +43,7 @@ A simple product management web application built with Laravel 12 (backend API) 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd laravel-app
+   cd Reg-Tech-Task
    ```
 
 2. **Install PHP dependencies**
