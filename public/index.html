@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="productApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management App</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="app.js"></script>
+    <style>
+        .loading {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.7);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+        }
+        .mt-20 { margin-top: 20px; }
+        .mb-20 { margin-bottom: 20px; }
+        .search-box { margin-bottom: 15px; }
+        .sort-header { cursor: pointer; }
+        .sort-header:hover { background-color: #f5f5f5; }
+        .sort-icon { margin-left: 5px; }
+    </style>
+</head>
+<body ng-controller="ProductController as pc" class="container mt-20">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="text-center mb-20">Product Management</h2>
+
+            <div ng-show="pc.loading" class="loading">
+                <div class="text-center">
+                    <i class="glyphicon glyphicon-refresh spinning"></i>
+                    <br>Loading...
+                </div>
+            </div>
+
+            <div class="alert alert-success" ng-show="pc.successMessage">
+                <i class="glyphicon glyphicon-ok"></i> {{ pc.successMessage }}
+            </div>
+            <div class="alert alert-danger" ng-show="pc.errorMessage">
+                <i class="glyphicon glyphicon-exclamation-sign"></i> {{ pc.errorMessage }}
+            </div>
+
+            <!-- Add Product Form -->
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Add New Product</h3>
+                </div>
+                <div class="panel-body">
+                    <form name="productForm" ng-submit="pc.addProduct()" novalidate class="form-inline">
+                        <div class="form-group">
+                            <input type="text" class="form-control" placeholder="Product Name"
+                                   ng-model="pc.newProduct.name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="number" class="form-control" placeholder="Price"
+                                   ng-model="pc.newProduct.price" min="0.01" step="0.01" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary"
+                                ng-disabled="productForm.$invalid || pc.loading">
+                            <i class="glyphicon glyphicon-plus"></i> Add Product
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Search and Sort Controls -->
+            <div class="row mb-20">
+                <div class="col-md-6">
+                    <div class="input-group search-box">
+                        <span class="input-group-addon">
+                            <i class="glyphicon glyphicon-search"></i>
+                        </span>
+                        <input type="text" class="form-control" placeholder="Search products..."
+                               ng-model="pc.searchText">
+                    </div>
+                </div>
+                <div class="col-md-6 text-right">
+                    <label class="control-label">Sort by: </label>
+                    <button class="btn btn-primary btn-sm" ng-click="pc.sortByField('created_at')">
+                        Newest First <i class="glyphicon" ng-class="pc.getSortIcon('created_at')"></i>
+                    </button>
+                    <button class="btn btn-default btn-sm" ng-click="pc.sortByField('name')">
+                        Name <i class="glyphicon" ng-class="pc.getSortIcon('name')"></i>
+                    </button>
+                    <button class="btn btn-default btn-sm" ng-click="pc.sortByField('price')">
+                        Price <i class="glyphicon" ng-class="pc.getSortIcon('price')"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Products Table -->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Product List</h3>
+                </div>
+                <div class="panel-body">
+                    <table class="table table-bordered table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th class="sort-header" ng-click="pc.sortByField('name')">
+                                    Name <i class="glyphicon sort-icon" ng-class="pc.getSortIcon('name')"></i>
+                                </th>
+                                <th class="sort-header" ng-click="pc.sortByField('price')">
+                                    Price <i class="glyphicon sort-icon" ng-class="pc.getSortIcon('price')"></i>
+                                </th>
+                                <th width="100">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="product in pc.filteredProducts">
+                                <td>{{ product.name }}</td>
+                                <td>{{ product.price | currency }}</td>
+                                <td>
+                                    <button class="btn btn-danger btn-xs" ng-click="pc.confirmDelete(product)">
+                                        <i class="glyphicon glyphicon-trash"></i> Delete
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr ng-if="!pc.filteredProducts.length && !pc.loading">
+                                <td colspan="3" class="text-center text-muted">
+                                    <i class="glyphicon glyphicon-info-sign"></i> No products found.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="deleteModalLabel">Confirm Delete</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the product "<strong>{{ pc.productToDelete.name }}</strong>"?</p>
+                    <p class="text-muted">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" ng-click="pc.deleteProduct()">
+                        <i class="glyphicon glyphicon-trash"></i> Delete Product
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and jQuery for modal functionality -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</body>
+</html>
