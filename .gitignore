@@ -1,0 +1,15 @@
+.env
+composer.phar
+composer.lock
+Homestead.json
+Homestead.yaml
+backupenv
+/node_modules
+/vendor
+.env
+/.idea
+/.settings/
+/.buildpath
+/.project
+/public/storage
+/public/hot
