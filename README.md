@@ -1,10 +1,10 @@
 # Product Management App
 
-A simple product management web application built with Laravel (backend API) and AngularJS 1.x (frontend).
+A simple product management web application built with Laravel 12 (backend API) and AngularJS 1.x (frontend).
 
 ## Features
 
-### Backend (Laravel API)
+### Backend (Laravel 12 API)
 - ✅ RESTful API endpoints for product management
 - ✅ GET /api/products - List all products
 - ✅ POST /api/products - Add a new product
@@ -23,7 +23,7 @@ A simple product management web application built with Laravel (backend API) and
 - ✅ Loading indicators during API calls
 - ✅ Auto-dismissing success/error messages (3 seconds)
 - ✅ Form validation with disabled submit button
-- ✅ **Bonus: Sorting by name and price**
+- ✅ **Bonus: Sorting by name, price, and newest first**
 - ✅ **Bonus: Search/filter by product name**
 - ✅ **Bonus: Bootstrap styling for responsive design**
 - ✅ **Enhanced: Newest products first by default**
@@ -32,9 +32,9 @@ A simple product management web application built with Laravel (backend API) and
 
 ## Requirements
 
-- PHP 8.1+
+- PHP 8.2+
 - Composer
-- Laravel 11
+- Laravel 12
 - MySQL 8.0+ (or SQLite/PostgreSQL)
 - Web server (Apache/Nginx) or Laravel's built-in server
 
@@ -62,6 +62,7 @@ A simple product management web application built with Laravel (backend API) and
    **Option A: MySQL (Recommended)**
    ```bash
    # Run the MySQL setup script
+   chmod +x setup_mysql.sh
    ./setup_mysql.sh
    
    # Or manually create database and import
@@ -79,6 +80,14 @@ A simple product management web application built with Laravel (backend API) and
 
    **Option B: SQLite (Alternative)**
    ```bash
+   # Create SQLite database
+   touch database/database.sqlite
+   
+   # Update .env file for SQLite
+   DB_CONNECTION=sqlite
+   DB_DATABASE=/absolute/path/to/database/database.sqlite
+   
+   # Run migrations and seeders
    php artisan migrate
    php artisan db:seed --class=ProductSeeder
    ```
@@ -229,18 +238,18 @@ php artisan migrate:status
 **API Endpoint Tests:**
 ```bash
 # Test GET products (should return 10 sample products)
-curl -X GET http://localhost:8001/api/products
+curl -X GET http://localhost:8000/api/products
 
 # Test POST product (should create new product)
-curl -X POST http://localhost:8001/api/products \
+curl -X POST http://localhost:8000/api/products \
   -H "Content-Type: application/json" \
   -d '{"name":"MySQL Test Product","price":99.99}'
 
 # Test DELETE product (should delete successfully)
-curl -X DELETE http://localhost:8001/api/products/12
+curl -X DELETE http://localhost:8000/api/products/12
 
 # Test validation (should return error messages)
-curl -X POST http://localhost:8001/api/products \
+curl -X POST http://localhost:8000/api/products \
   -H "Content-Type: application/json" \
   -d '{"name":"","price":-10}'
 ```
@@ -302,14 +311,16 @@ laravel-app/
 │   ├── api.php
 │   └── web.php
 ├── database_dump.sql
+├── database_dump_mysql.sql
+├── setup_mysql.sh
 └── README.md
 ```
 
 ## Technologies Used
 
-- **Backend:** Laravel 11, PHP 8.1+
+- **Backend:** Laravel 12, PHP 8.2+
 - **Frontend:** AngularJS 1.8.2, Bootstrap 3.4.1, jQuery 3.6.0
-- **Database:** SQLite (default), supports MySQL/PostgreSQL
+- **Database:** MySQL 8.0+ (recommended), SQLite (alternative)
 - **Testing:** Faker for generating test data
 - **UI/UX:** Bootstrap modals, responsive design, auto-dismissing alerts
 
@@ -359,6 +370,17 @@ php artisan serve --port=8001
 # Then access at http://localhost:8001
 ```
 
+### SQLite Setup Issues
+If using SQLite:
+```bash
+# Ensure database file exists and is writable
+touch database/database.sqlite
+chmod 664 database/database.sqlite
+
+# Clear config cache
+php artisan config:clear
+```
+
 ## Key Features Summary
 
 ### Core Requirements ✅
@@ -369,7 +391,7 @@ php artisan serve --port=8001
 - Confirmation dialogs for delete operations
 
 ### Bonus Features ✅
-- Sorting by name and price
+- Sorting by name, price, and newest first
 - Search/filter functionality
 - Bootstrap responsive design
 - Enhanced UI with icons and modern styling
@@ -380,6 +402,8 @@ php artisan serve --port=8001
 - Professional Bootstrap modal confirmations
 - Real-time search with instant feedback
 - Database seeder with realistic test data
+- MySQL and SQLite database support
+- Comprehensive setup scripts
 
 ## License
 
